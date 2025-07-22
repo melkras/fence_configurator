@@ -5,7 +5,7 @@ import { Fence } from "./Fence";
 export const Experience = () => {
   const { fenceCount, fenceWidth, postGap } = useConfigurator();
   // Load the grass texture
-  const grassTexture = useTexture("/textures/grass.jpg");
+  const grassTexture = useTexture("textures/grass.jpg");
   // Tile settings
   const areaSize = 40; // The current ground plane size
   const tileSize = 2; // Each tile will be 0.5x0.5

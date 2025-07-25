@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "yarn lint && vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "lint": "npx eslint src --ext ts,tsx",
+    "lint:fix": "npx eslint src --ext ts,tsx --fix"
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -26,6 +28,8 @@
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.1.0",
     "gh-pages": "^6.3.0",
+    "mk-eslint-config": "^1.0.56",
+    "typescript": "^5.8.3",
     "vite": "^4.1.0"
   }
 }

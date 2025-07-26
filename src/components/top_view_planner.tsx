@@ -1,6 +1,6 @@
-import { OrthographicCamera, Grid, Line } from '@react-three/drei';
+import { OrthographicCamera, Grid, Line, Html } from '@react-three/drei';
 import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Vector3, TextureLoader, RepeatWrapping } from 'three';
 
 type Point = [number, number]; // 2D XZ point
@@ -160,18 +160,42 @@ export default function TopViewPlanner() {
         fadeStrength={0.5}
       />
       {/* Render completed drawings */}
-      {completedDrawings.map((drawing, index) =>
+      {completedDrawings.map((drawing, _index) =>
         drawing.map((pt, i) => {
           if (i === 0) return null;
           const start = new Vector3(drawing[i - 1][0], 0.02, drawing[i - 1][1]);
           const end = new Vector3(pt[0], 0.02, pt[1]);
+          const length = start.distanceTo(end).toFixed(2); // Calculate length in meters
+          const midPoint = new Vector3(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2, // Dynamically calculate the y-coordinate for the midpoint
+            (start.z + end.z) / 2
+          ); // Ensure the midpoint is calculated correctly for exact center
+          const angle =
+            Math.atan2(end.z - start.z, end.x - start.x) * (180 / Math.PI); // Calculate angle in degrees
+          const normalizedAngle =
+            angle > 90 || angle < -90 ? angle + 180 : angle; // Normalize angle to keep text upright
           return (
-            <Line
-              key={`${index + i}`}
-              points={[start, end]}
-              color="blue"
-              lineWidth={2}
-            />
+            <React.Fragment
+              key={`${drawing[i - 1][0]}-${drawing[i - 1][1]}-${pt[0]}-${pt[1]}`}
+            >
+              <Line points={[start, end]} color="blue" lineWidth={2} />
+              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+                <div
+                  style={{
+                    color: 'black',
+                    background: 'white',
+                    padding: '2px',
+                    borderRadius: '4px',
+                    transform: `translate(-50%, -50%) rotate(${normalizedAngle}deg)`, // Center the text and rotate
+                    transformOrigin: 'center',
+                    position: 'absolute',
+                  }}
+                >
+                  {length}m
+                </div>
+              </Html>
+            </React.Fragment>
           );
         })
       )}
@@ -181,33 +205,75 @@ export default function TopViewPlanner() {
           if (i === 0) return null;
           const start = new Vector3(points[i - 1][0], 0.02, points[i - 1][1]);
           const end = new Vector3(pt[0], 0.02, pt[1]);
+          const length = start.distanceTo(end).toFixed(2); // Calculate length in meters
+          const midPoint = new Vector3(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2, // Dynamically calculate the y-coordinate for the midpoint
+            (start.z + end.z) / 2
+          ); // Ensure the midpoint is calculated correctly for exact center
+          const angle =
+            Math.atan2(end.z - start.z, end.x - start.x) * (180 / Math.PI); // Calculate angle in degrees
+          const normalizedAngle =
+            angle > 90 || angle < -90 ? angle + 180 : angle; // Normalize angle to keep text upright
           return (
-            <Line
-              key={`${i + pt[0]}`}
-              points={[start, end]}
-              color="black"
-              lineWidth={2}
-            />
+            <React.Fragment key={`${i + pt[0]}`}>
+              <Line points={[start, end]} color="black" lineWidth={2} />
+              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+                <div
+                  style={{
+                    color: 'black',
+                    background: 'white',
+                    padding: '2px',
+                    borderRadius: '4px',
+                    transform: `translate(-50%, -50%) rotate(${normalizedAngle}deg)`, // Center the text and rotate
+                    transformOrigin: 'center',
+                    position: 'absolute',
+                  }}
+                >
+                  {length}m
+                </div>
+              </Html>
+            </React.Fragment>
           );
         })}
-      {/* Preview segment */}
-      {preview && points.length > 0 && (
-        <Line
-          points={[
-            new Vector3(
-              points[points.length - 1][0],
-              0.02,
-              points[points.length - 1][1]
-            ),
-            new Vector3(preview[0], 0.02, preview[1]),
-          ]}
-          color="orange"
-          lineWidth={2}
-          dashed
-          dashSize={0.5}
-          gapSize={0.2}
-        />
-      )}
+      {/* Render preview line */}
+      {preview &&
+        points.length > 0 &&
+        (() => {
+          const lastPoint = points[points.length - 1];
+          const start = new Vector3(lastPoint[0], 0.02, lastPoint[1]);
+          const end = new Vector3(preview[0], 0.02, preview[1]);
+          const length = start.distanceTo(end).toFixed(2); // Calculate length in meters
+          const midPoint = new Vector3(
+            (start.x + end.x) / 2,
+            (start.y + end.y) / 2, // Dynamically calculate the y-coordinate for the midpoint
+            (start.z + end.z) / 2
+          ); // Ensure the midpoint is calculated correctly for exact center
+          const angle =
+            Math.atan2(end.z - start.z, end.x - start.x) * (180 / Math.PI); // Calculate angle in degrees
+          const normalizedAngle =
+            angle > 90 || angle < -90 ? angle + 180 : angle; // Normalize angle to keep text upright
+          return (
+            <React.Fragment>
+              <Line points={[start, end]} color="orange" lineWidth={2} />
+              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+                <div
+                  style={{
+                    color: 'black',
+                    background: 'white',
+                    padding: '2px',
+                    borderRadius: '4px',
+                    transform: `translate(-50%, -50%) rotate(${normalizedAngle}deg)`, // Center the text and rotate
+                    transformOrigin: 'center',
+                    position: 'absolute',
+                  }}
+                >
+                  {length}m
+                </div>
+              </Html>
+            </React.Fragment>
+          );
+        })()}
     </Canvas>
   );
 }

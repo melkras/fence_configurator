@@ -1,6 +1,5 @@
 import { OrthographicCamera, Grid, Line } from '@react-three/drei';
 import { Canvas, ThreeEvent } from '@react-three/fiber';
-import { useControls } from 'leva';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Vector3, TextureLoader, RepeatWrapping } from 'three';
 
@@ -36,13 +35,10 @@ export default function TopViewPlanner() {
   const [completedDrawings, setCompletedDrawings] = useState<Point[][]>([]);
   const cameraRef = useRef<CameraRefType>(null);
 
-  const { shouldSnapToGrid, gridSize, angleLock, angleStepDegrees } =
-    useControls({
-      shouldSnapToGrid: true,
-      gridSize: { value: 1, min: 0.1, max: 5, step: 0.1 },
-      angleLock: true,
-      angleStepDegrees: { value: 45, min: 1, max: 90, step: 1 },
-    });
+  const shouldSnapToGrid = true;
+  const gridSize = 1;
+  const angleLock = true;
+  const angleStepDegrees = 45;
 
   const grassTexture = useMemo(() => {
     const texture = new TextureLoader().load('/textures/grass.jpg');
@@ -136,6 +132,7 @@ export default function TopViewPlanner() {
     <Canvas orthographic style={{ height: '100vh', background: '#eee' }}>
       <OrthographicCamera
         makeDefault
+        // @ts-ignore
         ref={cameraRef}
         position={[0, 10, 0]}
         zoom={50}

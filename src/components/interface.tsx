@@ -31,7 +31,7 @@ export const Interface = () => {
     setFenceWidth(gapCount * newGap);
   };
 
-  return mode === '3D' ? (
+  return (
     <Box
       sx={{
         position: 'absolute',
@@ -114,5 +114,5 @@ export const Interface = () => {
         </Box>
       </Stack>
     </Box>
-  ) : null;
+  );
 };

@@ -29,7 +29,7 @@ export const ConfiguratorProvider = ({
   const [fenceCount, setFenceCount] = useState(1);
   const [postGap, setPostGap] = useState(20);
   const [fenceWidth, setFenceWidth] = useState(200);
-  const [mode, setMode] = useState('3D'); // Default mode is 3D
+  const [mode, setMode] = useState('2D'); // Default mode is 3D
   return (
     <ConfiguratorContext.Provider
       value={{

@@ -84,7 +84,6 @@ export default function TopViewPlanner() {
           [...points, [startX, startZ]],
         ]); // Save the completed drawing including the last line
         setPoints([]); // Reset points to start a new drawing
-        console.log('Skipping preview due to short distance');
         setPreview(null);
         return;
       }
@@ -101,21 +100,12 @@ export default function TopViewPlanner() {
 
     const last = points[points.length - 1];
 
-    // Step 1: Prevent movement that's too close to last point (before snapping)
-    const dxRaw = rawX - last[0];
-    const dzRaw = rawZ - last[1];
-    const rawDistance = Math.sqrt(dxRaw * dxRaw + dzRaw * dzRaw);
-    if (rawDistance < gridSize) {
-      setPreview(null);
-      return;
-    }
-
-    // Step 2: Snap to grid
+    // Snap to grid
     let [snappedX, snappedZ] = shouldSnapToGrid
       ? getSnappedPoint(rawX, rawZ, gridSize)
       : [rawX, rawZ];
 
-    // Step 3: Apply angle lock
+    // Apply angle lock
     if (angleLock) {
       const angleStepRad = (angleStepDegrees * Math.PI) / 180;
       [snappedX, snappedZ] = getSnappedAngle(
@@ -125,7 +115,7 @@ export default function TopViewPlanner() {
       );
     }
 
-    // Step 4: Prevent showing preview if snapped point is also too close
+    // Prevent showing preview if snapped point is also too close
     const dxSnapped = snappedX - last[0];
     const dzSnapped = snappedZ - last[1];
     const snappedDistance = Math.sqrt(

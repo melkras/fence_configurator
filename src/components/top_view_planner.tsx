@@ -20,9 +20,16 @@ function getSnappedPoint(x: number, z: number, gridSize: number): Point {
 function getSnappedAngle(prev: Point, next: Point, snapAngle: number): Point {
   const dx = next[0] - prev[0];
   const dz = next[1] - prev[1];
+  const length = Math.sqrt(dx * dx + dz * dz);
+
+  // 💥 New: If the vector is too short or nearly flat, do NOT snap
+  if (length < 1.01) {
+    return next;
+  }
+
   const angle = Math.atan2(dz, dx);
   const snappedAngle = Math.round(angle / snapAngle) * snapAngle;
-  const length = Math.sqrt(dx * dx + dz * dz);
+
   return [
     prev[0] + Math.cos(snappedAngle) * length,
     prev[1] + Math.sin(snappedAngle) * length,
@@ -77,6 +84,7 @@ export default function TopViewPlanner() {
           [...points, [startX, startZ]],
         ]); // Save the completed drawing including the last line
         setPoints([]); // Reset points to start a new drawing
+        console.log('Skipping preview due to short distance');
         setPreview(null);
         return;
       }
@@ -84,16 +92,31 @@ export default function TopViewPlanner() {
 
     setPoints([...points, [snappedX, snappedZ]]);
   };
-
   const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
     if (!e.point) return;
-    const [x, , z] = e.point.toArray();
-    let [snappedX, snappedZ] = shouldSnapToGrid
-      ? getSnappedPoint(x, z, gridSize)
-      : [x, z];
 
-    if (angleLock && points.length > 0) {
-      const last = points[points.length - 1];
+    const [rawX, , rawZ] = e.point.toArray();
+
+    if (points.length === 0) return; // Nothing to preview from
+
+    const last = points[points.length - 1];
+
+    // Step 1: Prevent movement that's too close to last point (before snapping)
+    const dxRaw = rawX - last[0];
+    const dzRaw = rawZ - last[1];
+    const rawDistance = Math.sqrt(dxRaw * dxRaw + dzRaw * dzRaw);
+    if (rawDistance < gridSize) {
+      setPreview(null);
+      return;
+    }
+
+    // Step 2: Snap to grid
+    let [snappedX, snappedZ] = shouldSnapToGrid
+      ? getSnappedPoint(rawX, rawZ, gridSize)
+      : [rawX, rawZ];
+
+    // Step 3: Apply angle lock
+    if (angleLock) {
       const angleStepRad = (angleStepDegrees * Math.PI) / 180;
       [snappedX, snappedZ] = getSnappedAngle(
         last,
@@ -102,6 +125,18 @@ export default function TopViewPlanner() {
       );
     }
 
+    // Step 4: Prevent showing preview if snapped point is also too close
+    const dxSnapped = snappedX - last[0];
+    const dzSnapped = snappedZ - last[1];
+    const snappedDistance = Math.sqrt(
+      dxSnapped * dxSnapped + dzSnapped * dzSnapped
+    );
+    if (snappedDistance < gridSize) {
+      setPreview(null);
+      return;
+    }
+
+    // All checks passed — safe to preview
     setPreview([snappedX, snappedZ]);
   };
 
@@ -180,7 +215,11 @@ export default function TopViewPlanner() {
               key={`${drawing[i - 1][0]}-${drawing[i - 1][1]}-${pt[0]}-${pt[1]}`}
             >
               <Line points={[start, end]} color="blue" lineWidth={2} />
-              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+              <Html
+                position={[midPoint.x, midPoint.y, midPoint.z]}
+                pointerEvents="none"
+                style={{ pointerEvents: 'none' }}
+              >
                 <div
                   style={{
                     color: 'black',
@@ -218,7 +257,11 @@ export default function TopViewPlanner() {
           return (
             <React.Fragment key={`${i + pt[0]}`}>
               <Line points={[start, end]} color="black" lineWidth={2} />
-              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+              <Html
+                position={[midPoint.x, midPoint.y, midPoint.z]}
+                pointerEvents="none"
+                style={{ pointerEvents: 'none' }}
+              >
                 <div
                   style={{
                     color: 'black',
@@ -256,7 +299,11 @@ export default function TopViewPlanner() {
           return (
             <React.Fragment>
               <Line points={[start, end]} color="orange" lineWidth={2} />
-              <Html position={[midPoint.x, midPoint.y, midPoint.z]}>
+              <Html
+                position={[midPoint.x, midPoint.y, midPoint.z]}
+                pointerEvents="none"
+                style={{ pointerEvents: 'none' }}
+              >
                 <div
                   style={{
                     color: 'black',

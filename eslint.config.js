@@ -1,3 +1,14 @@
-import eslintConfig from 'mk-eslint-config';
+import mainConfig, { baseRules, basePlugins } from 'mk-eslint-config';
 
-export default [...eslintConfig];
+export default [
+    ...mainConfig,
+    {
+        plugins: {
+            ...basePlugins,
+        },
+        rules: {
+            ...baseRules,
+            'react/no-array-index-key': 'off'
+        },
+    },
+];

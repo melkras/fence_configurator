@@ -3,7 +3,9 @@ import { Canvas, ThreeEvent } from '@react-three/fiber';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Vector3, TextureLoader, RepeatWrapping } from 'three';
 
-type Point = [number, number]; // 2D XZ point
+import { useConfigurator } from '../contexts/configurator';
+
+export type Point = [number, number]; // 2D XZ point
 type CameraRefType = {
   zoom: number;
   updateProjectionMatrix: () => void;
@@ -41,9 +43,10 @@ export default function TopViewPlanner() {
   const [preview, setPreview] = useState<Point | null>(null);
   const [completedDrawings, setCompletedDrawings] = useState<Point[][]>([]);
   const cameraRef = useRef<CameraRefType>(null);
+  const { topView, setTopView } = useConfigurator();
 
   const shouldSnapToGrid = true;
-  const gridSize = 1;
+  const gridSize = 2.5; // 2.5 meters grid size
   const angleLock = true;
   const angleStepDegrees = 45;
 
@@ -79,10 +82,14 @@ export default function TopViewPlanner() {
       );
       if (distance < gridSize * 0.5) {
         // Threshold to consider it connected
-        setCompletedDrawings([
-          ...completedDrawings,
-          [...points, [startX, startZ]],
-        ]); // Save the completed drawing including the last line
+        const completedDrawing: Point[] = [...points, [startX, startZ]]; // Explicitly type completedDrawing as Point[]
+        const roundedDrawing: Point[] = completedDrawing.map(([x, z]) => [
+          snapToGrid(x, gridSize),
+          snapToGrid(z, gridSize),
+        ]);
+        setCompletedDrawings([roundedDrawing]);
+        console.log('Completed drawing (rounded):', roundedDrawing);
+        setTopView(roundedDrawing); // Store the completed drawing in the configurator context
         setPoints([]); // Reset points to start a new drawing
         setPreview(null);
         return;
@@ -151,6 +158,13 @@ export default function TopViewPlanner() {
         canvas.removeEventListener('wheel', handleWheel);
       }
     };
+  }, []);
+
+  useEffect(() => {
+    if (topView.length > 0) {
+      setPoints(topView);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

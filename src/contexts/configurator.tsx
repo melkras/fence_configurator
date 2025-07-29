@@ -6,6 +6,8 @@ import {
   SetStateAction,
 } from 'react';
 
+import { Point } from '@/components/top_view_planner';
+
 type ConfiguratorContextType = {
   fenceCount: number;
   setFenceCount: Dispatch<SetStateAction<number>>;
@@ -15,6 +17,8 @@ type ConfiguratorContextType = {
   setFenceWidth: Dispatch<SetStateAction<number>>;
   mode: string;
   setMode: Dispatch<SetStateAction<string>>;
+  topView: Point[];
+  setTopView: Dispatch<SetStateAction<Point[]>>;
 };
 
 const ConfiguratorContext = createContext<ConfiguratorContextType | undefined>(
@@ -29,7 +33,8 @@ export const ConfiguratorProvider = ({
   const [fenceCount, setFenceCount] = useState(1);
   const [postGap, setPostGap] = useState(20);
   const [fenceWidth, setFenceWidth] = useState(200);
-  const [mode, setMode] = useState('2D'); // Default mode is 3D
+  const [mode, setMode] = useState('2D');
+  const [topView, setTopView] = useState<Point[]>([]);
   return (
     <ConfiguratorContext.Provider
       value={{
@@ -41,6 +46,8 @@ export const ConfiguratorProvider = ({
         setPostGap,
         mode,
         setMode,
+        topView,
+        setTopView,
       }}
     >
       {children}
